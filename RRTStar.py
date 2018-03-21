@@ -7,7 +7,8 @@ WINDOW = "RRT_Widnow"
 
 
 DISPLAY = True
-DISPINT = 50
+SHOWREWIRE = True
+DISPINT = 100
 MAXNODES = 5000
 
 WHITE   = (255,255,255)
@@ -29,7 +30,7 @@ PATHCOLOR = RED
 MAPHEIGHT = 1000
 MAPWIDTH  = MAPHEIGHT
 
-START = (1,1) 
+START = (500,500) 
 END   = (MAPWIDTH-1,MAPHEIGHT-1)
 
 TEXTLOC = (5+0,MAPHEIGHT-5)
@@ -47,8 +48,15 @@ def draw(image, nodes, pathed,redraw):
     
     cv2.circle(image, END, int(STEPSIZE), PATHCOLOR)
 
+    if SHOWREWIRE:
+        for place in redraw:
+            cv2.line(image, place, redraw[place], WHITE, LINESIZE)
+        cv2.imshow(WINDOW, image)
+        cv2.waitKey(1)
     for place in redraw:
-        cv2.line(image, place, redraw[place], BGCOLOR, LINESIZE)
+        cv2.line(image,place,redraw[place],BGCOLOR,LINESIZE)
+
+    redraw.clear()   
 
     for place in nodes:
 
@@ -60,7 +68,7 @@ def draw(image, nodes, pathed,redraw):
         
     cv2.circle(image, START, NODESIZE+2, PATHCOLOR, -1)
     cv2.circle(image, END, NODESIZE+2, PATHCOLOR, -1)
-    cv2.putText(image, "N: " + str(len(nodes)-1), TEXTLOC, 5, 1, BGCOLOR, 1)
+    cv2.putText(image, "N: " + str(len(nodes)-DISPINT), TEXTLOC, 5, 1, BGCOLOR, 1)
     cv2.putText(image, "N: " + str(len(nodes)), TEXTLOC, 5, 1, RED, 1)
 
     cv2.imshow(WINDOW,image)
@@ -217,7 +225,7 @@ def main():
         if newNode == parent:
             print("1")
             return
-        redraw = rewire(newNode, nodelist, costs, map)
+        redraw.update(rewire(newNode, nodelist, costs, map))
 
 
         if euclDist(newNode, END) < STEPSIZE:
