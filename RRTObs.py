@@ -7,8 +7,8 @@ WINDOW = "RRT_Widnow"
 
 
 DISPLAY = True
-DISPINT = 50
-MAXNODES = 5000
+DISPINT = 1
+MAXNODES = 1000
 
 WHITE   = (255,255,255)
 BLACK   = (0,0,0)
@@ -34,10 +34,10 @@ END   = (MAPWIDTH-1,MAPHEIGHT-1)
 
 TEXTLOC = (5+0,MAPHEIGHT-5)
 
-LINESIZE = 2
+LINESIZE = 1
 NODESIZE = (LINESIZE + 1)
 
-STEPSIZE = (MAPHEIGHT + MAPWIDTH)/2 * .15
+STEPSIZE = (MAPHEIGHT + MAPWIDTH)/2 * .2
 
 def destroyImage(image):
     cv2.imshow(WINDOW, image)
@@ -69,23 +69,16 @@ def draw(image, nodes, pathed,redraw):
 def pathedDraw(image, nodes):
     #print("display path")
     node = END
-    #counter = 0
-    
+    counter = 0
     while node is not START:
-        #counter +=1
-        #print("counter" + str(counter))
-        #print("node" + str(node))
-        #print("parent" + str(nodes[node]))
-       
-        
-        cv2.line(image,node,nodes[node],RED,LINESIZE)
-        cv2.circle(image, node, NODESIZE, RED, -1)
+        counter += 1
+        print("counter " str(counter))
+        print("node" + str(node))
+        print("parent" + str(nodes[node]))
+        cv2.line(image,node,nodes[node],(int(255*(MAXNODES-len(nodes))/MAXNODES),int(255*(MAXNODES-len(nodes))/MAXNODES),int(255*len(nodes)/MAXNODES)),LINESIZE+1)
         node = nodes[node]
-        #if counter > 75:
-            #cv2.imshow(WINDOW, image)
-            #cv2.waitKey(0)
-            #counter = "hello"
-        #cv2.circle(image, node, NODESIZE+1, BGCOLOR, -1)
+        if counter > 400:
+            counter = "hello"
 
 
 def euclDist(n1,n2):
@@ -100,6 +93,7 @@ def distanceSortLambda(origin):
     ------stolen from James----------
     '''
     return lambda x: euclDist(origin, x)
+
 def rewire(newNode,nodelist,costs,image):
     redraw = {}
     for node in nodelist:
@@ -109,15 +103,9 @@ def rewire(newNode,nodelist,costs,image):
             continue
         newCost = costs[newNode] + euclDist(node, newNode)
         if newCost < costs[node]:
-            cv2.line(image, node, nodelist[node], BGCOLOR, LINESIZE)
             redraw[node]= nodelist[node]
-            if node == nodelist[node]:
-                print("5")
-                return
+        
             nodelist[node] = newNode
-            if node == newNode:
-                print("6")
-                return
             costs[node] = newCost
     return redraw        
 
@@ -203,8 +191,6 @@ def main():
                 minCost = compCost
                 parent = place
         dist = euclDist(newNode, parent)
-        if nodelist.has_key(newNode):
-            continue
         if newNode == END:
             continue
         if dist > STEPSIZE:
@@ -212,11 +198,8 @@ def main():
 
 
         costs[newNode] = minCost
-        
         nodelist[newNode] = parent
-        if newNode == parent:
-            print("1")
-            return
+
         redraw = rewire(newNode, nodelist, costs, map)
 
 
@@ -224,21 +207,12 @@ def main():
             if endFound == 1:
                 if euclDist(newNode, END) < euclDist(nodelist[END], END):
                     redraw[END] = nodelist[END]
-                    if END == nodelist[END]:
-                        print("2")
-                        return
                     nodelist[END]=newNode
-                    if END == newNode:
-                        print("3")
-                        return
                     costs[END]= costs[newNode] + euclDist(END, newNode)
                     endFound = 1
                     #print("FOUND THE END")
             else:
                 nodelist[END]=newNode
-                if END == newNode:
-                    print("4")
-                    return
                 costs[END]= costs[newNode] + euclDist(END, newNode)
                 endFound = 1
 
