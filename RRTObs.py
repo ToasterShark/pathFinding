@@ -40,6 +40,11 @@ NODESIZE = (LINESIZE + 1)
 
 STEPSIZE = (MAPHEIGHT + MAPWIDTH)/2 * .1
 
+ix,iy = -1,-1
+drawing = False
+mode = True
+
+
 def destroyImage(image):
     cv2.imshow(WINDOW, image)
     cv2.waitKey(0)
@@ -109,12 +114,13 @@ def distanceSortLambda(origin):
     '''
     return lambda x: euclDist(origin, x)
 def rewire(newNode,nodelist,costs,image):
+    global oblist
     redraw = {}
     for node in nodelist:
-        if node == newNode:
-            continue
-        if euclDist(node, newNode) > STEPSIZE:
-            continue
+        if node == newNode: continue
+
+        if euclDist(node, newNode) > STEPSIZE: continue
+        if collide(node,newNode,oblist): continue
         newCost = costs[newNode] + euclDist(node, newNode)
         if newCost < costs[node]:
             cv2.line(image, node, nodelist[node], BGCOLOR, LINESIZE)
@@ -176,21 +182,70 @@ def finalPath(image, nodes):
 
     cv2.imshow(WINDOW, image)
 
+def drawObstacles(event,x,y,flags,param):
+    global ix,iy,drawing,mode,oblist
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        drawing = True
+        ix,iy = x,y
+    elif event == cv2.EVENT_LBUTTONUP:
+        drawing = False
+        if mode:
+            cv2.line(img,(ix,iy),(x,y),MAGENTA,LINESIZE)
+            oblist.append(((ix,iy),(x,y)))
+        else:
+            cv2.circle(img,(ix,iy),int(euclDist((ix,iy),(x,y))),MAGENTA,-1)
+
+img = numpy.zeros((MAPWIDTH,MAPHEIGHT,3))
+oblist = []
+
+def ccw(A,B,C):
+    first  = (C[1] - A[1]) * (B[0] - A[0])
+    second = (B[1] - A[1]) * (C[0] - A[0])
+    return first > second
+
+def intersect(A,B,C,D):
+    return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
+
+def collide(node,newNode,oblist):
+    rtn = False
+    for seg in oblist:
+        if intersect(node,newNode,seg[0],seg[1]):
+            rtn = True
+            break
+    return rtn
+
 def main():
     endFound = 0
     cv2.namedWindow(WINDOW, cv2.WINDOW_NORMAL)
     scale = 800/MAPHEIGHT
     cv2.resizeWindow(WINDOW, 800, 800)
 
+    #make mousecallback
+    cv2.setMouseCallback(WINDOW,drawObstacles)
+
     #make the map
-    map = numpy.zeros((MAPWIDTH,MAPHEIGHT,3))
-    map[:][:] = BGCOLOR
+    global img,mode
+    img[:][:] = BGCOLOR
 
     nodelist = {START:START}
     costs = {}
 
     costs[START] = 0
     redraw = {}
+
+    #array of tuples in form ((p1x,p1y),(p2x,p2y))
+    
+
+    #draw obstacles
+    
+    print("draw your obstacles, press q to end")
+    while True:
+        cv2.imshow(WINDOW,img)
+        k = cv2.waitKey(10) & 0xFF
+        if k == ord("m"): mode = not mode
+        elif k == ord("q"): break
+
     while len(nodelist) < MAXNODES:
         #if len(nodelist) % DISPINT == 0:
             #print(len(nodelist))
@@ -216,8 +271,15 @@ def main():
         if newNode == END:
             continue
         if dist > STEPSIZE:
-            continue
+            dx = newNode[0]-parent[0]
+            dy = newNode[1]-parent[1]
 
+            dx = int(dx*STEPSIZE/dist)
+            dy = int(dy*STEPSIZE/dist)
+
+            newNode = (parent[0]+dx), (parent[1]+dy)
+        if collide(parent,newNode,oblist):
+            continue
         #
         #
         #insert the check for collision
@@ -230,7 +292,7 @@ def main():
         if newNode == parent:
             print("1")
             return
-        redraw.update(rewire(newNode, nodelist, costs, map))
+        redraw.update(rewire(newNode, nodelist, costs, img))
 
 
         if euclDist(newNode, END) < STEPSIZE:
@@ -268,10 +330,10 @@ def main():
         '''
         
         if len(nodelist) % DISPINT == 0 and DISPLAY:
-            draw(map,nodelist,endFound,redraw)
-    draw(map, nodelist, endFound, redraw)
-    #finalPath(map,nodelist)
-    destroyImage(map)
+            draw(img,nodelist,endFound,redraw)
+    draw(img, nodelist, endFound, redraw)
+    #finalPath(img,nodelist)
+    destroyImage(img)
 
 
 if __name__ == '__main__':
