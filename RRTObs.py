@@ -7,9 +7,9 @@ WINDOW = "RRT_Widnow"
 
 
 DISPLAY = True
-SHOWREWIRE = True
-DISPINT = 100
-MAXNODES = 5000
+SHOWREWIRE = False
+DISPINT = 1
+MAXNODES = 10000
 
 WHITE   = (255,255,255)
 BLACK   = (0,0,0)
@@ -27,10 +27,10 @@ NODECOLOR = CYAN
 LINECOLOR = CYAN
 PATHCOLOR = RED
 
-MAPHEIGHT = 2000
+MAPHEIGHT = 1000
 MAPWIDTH  = MAPHEIGHT
 
-START = (500,500) 
+START = (1,1) 
 END   = (MAPWIDTH-1,MAPHEIGHT-1)
 
 TEXTLOC = (5+0,MAPHEIGHT-5)
@@ -73,8 +73,8 @@ def draw(image, nodes, pathed,redraw):
         
     cv2.circle(image, START, NODESIZE+2, PATHCOLOR, -1)
     cv2.circle(image, END, NODESIZE+2, PATHCOLOR, -1)
-    cv2.putText(image, "N: " + str(len(nodes)-DISPINT), TEXTLOC, 5, 1, BGCOLOR, 1)
-    cv2.putText(image, "N: " + str(len(nodes)), TEXTLOC, 5, 1, RED, 1)
+    cv2.putText(image, "N: " + str(len(nodes)-DISPINT), TEXTLOC, 5, 2, BGCOLOR, 1)
+    cv2.putText(image, "N: " + str(len(nodes)), TEXTLOC, 5, 2, RED, 1)
 
     cv2.imshow(WINDOW,image)
     cv2.waitKey(1)
