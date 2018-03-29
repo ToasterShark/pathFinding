@@ -3,7 +3,7 @@ import cv2
 import Queue
 import math
 
-imagename  = "maze3.png"
+imagename  = "maze_2.png"
 
 def main():
     map = cv2.imread(imagename, 1)
@@ -11,8 +11,8 @@ def main():
     cv2.namedWindow("a*", cv2.WINDOW_NORMAL,)
 
     #coordinates in (x,y) format
-    begin = (50,50)
-    end = (99,99)
+    begin = (128,10)
+    end = (1198,1262)
     print("\n before aStar begins")
     path = aStar(begin,end,map,255,editable)
 
@@ -30,7 +30,8 @@ def aStar(start,finish,map,space,newmap):
     else:
         path = []
         trace = point
-        while trace != None:
+        while trace is not None:
+            print(point)
             path.append(trace)
             trace = parents[trace]
         return path
@@ -52,25 +53,31 @@ def pathing(s,f,m,space,nm):
 
     #lets explore the unexplored
     counter = 0
+    print("before while")
     while not unexplored.empty():
+    	#print("while start")
         #point is the current point
         point = unexplored.get()[1]
+
         
-        if counter % 50 == 0:
+        if counter % 50000 == 0:
             cv2.imshow("a*",nm)
             cv2.waitKey(10)
         if point == f:
             #ur here bud! congrats
             return point,parents,costs[point]
         if(point[0] >= len(m) or point[0] < 0 or point[1] >= len(m[0]) or point[1] < 0):
+            #print("if 1")
             #out of bounds
             continue
         if numpy.all(m[point[0]][point[1]] != space):
+            #print("if 2")
             #ur in a wall, how did u do this
             continue
         #check the possible next steps
         nm[point[0]][point[1]]=(0,255,0)
         for step in surrounding(point):
+            #print("start for")
             cost = costs[point] + dist(point,step)
             #check for new lowest cost
             if not step in costs or cost < costs[step]:
@@ -79,7 +86,8 @@ def pathing(s,f,m,space,nm):
 
                 #puts new step in the unexplored list
                 unexplored.put((stepworth,step))
-                parents[step] = point
+                if step != point:
+                    parents[step] = point
         counter+=1
 
     return s,parents,-1
