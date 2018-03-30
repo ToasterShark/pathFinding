@@ -10,7 +10,7 @@ MAZEBOOL        = True
 
 DISPLAY         = True
 SHOWREWIRE      = True
-DISPINT         = 1
+DISPINT         = 100
 MAXNODES        = 10000
 
 
@@ -218,7 +218,7 @@ def collide(node,newNode,oblist):
             break
     return rtn
 
-def move(nodes,costs):#only call this method once the path has been found
+def move(v,nodes,costs):#only call this method once the path has been found
     global START
     node = END
     falsestart = START
@@ -240,7 +240,8 @@ def move(nodes,costs):#only call this method once the path has been found
             n = nodes[n]
 
         costs[neighbors[i]] = cost
-    cv2.waitKey(1000)
+
+
 
     return nodes,costs
     #if im not mistaken, using global to call START should allow me to overwrite the global value for START
@@ -268,6 +269,11 @@ def main():
     redraw = {}
 
     arrived = 0
+
+    #tuple of vehicle coord
+    vehicle = START
+
+
     #array of tuples in form ((p1x,p1y),(p2x,p2y))
     
 
@@ -374,7 +380,7 @@ def main():
                 DISPINT = 1
                 print("before move")
                 
-                nodelist,costs = move(nodelist,costs)
+                nodelist,costs = move(vehicle,nodelist,costs)
                 print("after move")
 
                 neighbors = sorted( nodelist, key=distanceSortLambda(START))
